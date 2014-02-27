@@ -1,41 +1,51 @@
 #!/usr/bin/python
-
-import os, time
+import os, time, redis
 
 # Logik!
-# 1. om telefonen svara pa ping, tand lampa
-#       om det ar morkt ute.
-#       om lamporna inte redan ar pa (spelar ingen roll)
-#	om sleepmode, strombrytare vid sangen, tand inte lampor pa ett dygn.
-#       
+# - If my phone is connected to the local network, turn on lights 
+#	IF:
+#	  It's dark outside
+#	  The lights are off
+#	  It's not sleep time. Don't want the lights to turn on when i sleep. Doh!       
+
 
 phone_ip = "192.168.1.32"
 debug = 1 
 
 def main():
-    status = 0  # Current light status
+    # Use Redis Database!
+    R = redis.StrictRedis(host='localhost', port=6379, db=0)
+    R.setnx('light:status', 0)  # If not exist set status to 0 = lights off
+    R.setnx('light:nightmode', 0) # If not exist set nightmode to 0. 1 = do not turn on light.
 
     while 1:
-        r = do_ping(phone_ip)  # Is the phone online
+	status = int(R.get('light:status')) # Read current light status
 
-	if debug: # Debug
-	   print(tid() + " Phone: " + str(r) + " Status: " + str(status))
+	if int(R.get('light:nightmode')) == 0: # If in nightmode, do noting.
+           r = do_ping(phone_ip)  # Is the phone online
+	
+ 	   if debug: # Debug
+	      print(tid() + " Phone: " + str(r) + " Status: " + str(status))
 
-	# If the last status is off and the phone is reacheble, turn liggts on.
-	if (r == 1) and (status == 0):
- 	   lights_on(3)
-	   status = 1
-	elif (r == 0) and (status == 1):
-	   lights_off(3)
-	   status = 0
+	   # If the last status is off and the phone is reacheble, turn liggts on.
+	   if (r == 1) and (status == 0):
+ 	      lights_on(3)
+	      R.set('light:status', 1)
+	   elif (r == 0) and (status == 1):
+	      lights_off(3)
+	      R.set('light:status', 0)
 
-	# If the phone was last in range, sleep 60 sec before next ping.
-	if status == 1:
-	   time.sleep(60)
-	else:
-	   time.sleep(2)
+	rest(status) # Sleep a while
 
-# Turn lighs on with the use of telldus tool
+
+# If the phone was last in range, sleep 60 sec before next ping.
+def rest(status):
+   if status == 1:
+      time.sleep(60)
+   else:
+      time.sleep(2)
+
+# Turn lighs on with the use of telldus tool. id is the id of the light in telldus config.
 def lights_on(id):
   os.system("/usr/bin/tdtool --on " + str(id))
 
