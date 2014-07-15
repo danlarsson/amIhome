@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os, time, redis
+import sunrise
 
 # Logik!
 # - If my phone is connected to the local network, turn on lights 
@@ -10,6 +11,8 @@ import os, time, redis
 
 
 phone_ip = "192.168.1.32"
+lat = '60.6754'
+long = '17.1509'
 debug = 1 
 
 def main():
@@ -25,14 +28,14 @@ def main():
            r = do_ping(phone_ip)  # Is the phone online
 	
  	   if debug: # Debug
-	      print(tid() + " Phone: " + str(r) + " Status: " + str(status))
+	      print(tid() + " Phone: " + str(r) + " Status: " + str(status)) + ' Daylight: ' + str(sunrise.daylight(lat, long))
 
 	   # If the last status is off and the phone is reacheble, turn liggts on.
-	   if (r == 1) and (status == 0):
- 	      lights_on(3)
+	   if (r == 1) and (status == 0) and not sunrise.daylight(lat, long):
+ 	      lights_on(1)
 	      R.set('light:status', 1)
 	   elif (r == 0) and (status == 1):
-	      lights_off(3)
+	      lights_off(1)
 	      R.set('light:status', 0)
 
 	rest(status) # Sleep a while

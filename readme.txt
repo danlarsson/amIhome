@@ -4,7 +4,10 @@
 
 
 # Installation and needed packages:
+sudo apt-get install python-dev
 sudo apt-get install python-pip
 sudo apt-get install redis-server
-pip install redis
+
+sudo pip install redis
+sudo pip install pyephem
 
