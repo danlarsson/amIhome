@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
 #	(. .) 
 #	 ).(
-#	/ v \
-#	\ | / 
+#	( v )
+#	 \|/ 
 #
 # Last line, it gets no better than this.

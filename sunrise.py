@@ -28,7 +28,7 @@ def daylight(lat, long):
    set = sunset(lat,long).real
    now = ephem.now().real
 
-   if (now >= rise) and (now <= set) and (rise > set):
+   if (now >= rise) and (now <= set) and (rise < set):
       return True
    else:
       return False
